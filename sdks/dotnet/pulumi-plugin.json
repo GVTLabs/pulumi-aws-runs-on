@@ -1,0 +1,10 @@
+{
+  "resource": true,
+  "name": "terraform-module",
+  "version": "0.2.2",
+  "parameterization": {
+    "name": "runs-on-fleet",
+    "version": "3.4.0",
+    "value": "ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy40LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9"
+  }
+}

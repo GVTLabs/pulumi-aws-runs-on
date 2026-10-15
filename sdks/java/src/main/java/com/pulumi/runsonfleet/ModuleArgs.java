@@ -38,6 +38,21 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
+     * Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+     * 
+     */
+    @Import(name="app_budget_daily_usd")
+    private @Nullable Output<Double> app_budget_daily_usd;
+
+    /**
+     * @return Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+     * 
+     */
+    public Optional<Output<Double>> app_budget_daily_usd() {
+        return Optional.ofNullable(this.app_budget_daily_usd);
+    }
+
+    /**
      * Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
      * 
      */
@@ -140,6 +155,21 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
      */
     public Optional<Output<Double>> cache_expiration_days() {
         return Optional.ofNullable(this.cache_expiration_days);
+    }
+
+    /**
+     * Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+     * 
+     */
+    @Import(name="container_insights_enabled")
+    private @Nullable Output<Boolean> container_insights_enabled;
+
+    /**
+     * @return Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+     * 
+     */
+    public Optional<Output<Boolean>> container_insights_enabled() {
+        return Optional.ofNullable(this.container_insights_enabled);
     }
 
     /**
@@ -338,14 +368,14 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
-     * GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+     * GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
      * 
      */
     @Import(name="github_base_url")
     private @Nullable Output<String> github_base_url;
 
     /**
-     * @return GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+     * @return GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
      * 
      */
     public Optional<Output<String>> github_base_url() {
@@ -473,6 +503,21 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
+     * Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd &gt; 0.
+     * 
+     */
+    @Import(name="messaging_kms_key_arn")
+    private @Nullable Output<String> messaging_kms_key_arn;
+
+    /**
+     * @return Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd &gt; 0.
+     * 
+     */
+    public Optional<Output<String>> messaging_kms_key_arn() {
+        return Optional.ofNullable(this.messaging_kms_key_arn);
+    }
+
+    /**
      * OpenTelemetry exporter endpoint for observability (optional)
      * 
      */
@@ -488,14 +533,14 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
-     * OpenTelemetry exporter headers (optional)
+     * OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
      * 
      */
     @Import(name="otel_exporter_headers")
     private @Nullable Output<String> otel_exporter_headers;
 
     /**
-     * @return OpenTelemetry exporter headers (optional)
+     * @return OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
      * 
      */
     public Optional<Output<String>> otel_exporter_headers() {
@@ -503,14 +548,14 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
-     * OTLP metrics temporality: cumulative (default) or delta
+     * OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
      * 
      */
     @Import(name="otel_exporter_temporality")
     private @Nullable Output<String> otel_exporter_temporality;
 
     /**
-     * @return OTLP metrics temporality: cumulative (default) or delta
+     * @return OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
      * 
      */
     public Optional<Output<String>> otel_exporter_temporality() {
@@ -821,6 +866,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
 
     private ModuleArgs(ModuleArgs $) {
         this.alert_slack_webhook_url = $.alert_slack_webhook_url;
+        this.app_budget_daily_usd = $.app_budget_daily_usd;
         this.app_capacity_provider = $.app_capacity_provider;
         this.app_size = $.app_size;
         this.app_tag = $.app_tag;
@@ -828,6 +874,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         this.cache_bucket_namespace = $.cache_bucket_namespace;
         this.cache_bucket_versioning_enabled = $.cache_bucket_versioning_enabled;
         this.cache_expiration_days = $.cache_expiration_days;
+        this.container_insights_enabled = $.container_insights_enabled;
         this.cost_allocation_tag = $.cost_allocation_tag;
         this.ecr_pull_through_cache_rules = $.ecr_pull_through_cache_rules;
         this.email = $.email;
@@ -850,6 +897,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         this.license_key = $.license_key;
         this.log_retention_days = $.log_retention_days;
         this.maintenance_mode = $.maintenance_mode;
+        this.messaging_kms_key_arn = $.messaging_kms_key_arn;
         this.otel_exporter_endpoint = $.otel_exporter_endpoint;
         this.otel_exporter_headers = $.otel_exporter_headers;
         this.otel_exporter_temporality = $.otel_exporter_temporality;
@@ -912,6 +960,27 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder alert_slack_webhook_url(String alert_slack_webhook_url) {
             return alert_slack_webhook_url(Output.of(alert_slack_webhook_url));
+        }
+
+        /**
+         * @param app_budget_daily_usd Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder app_budget_daily_usd(@Nullable Output<Double> app_budget_daily_usd) {
+            $.app_budget_daily_usd = app_budget_daily_usd;
+            return this;
+        }
+
+        /**
+         * @param app_budget_daily_usd Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder app_budget_daily_usd(Double app_budget_daily_usd) {
+            return app_budget_daily_usd(Output.of(app_budget_daily_usd));
         }
 
         /**
@@ -1059,6 +1128,27 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
          */
         public Builder cache_expiration_days(Double cache_expiration_days) {
             return cache_expiration_days(Output.of(cache_expiration_days));
+        }
+
+        /**
+         * @param container_insights_enabled Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder container_insights_enabled(@Nullable Output<Boolean> container_insights_enabled) {
+            $.container_insights_enabled = container_insights_enabled;
+            return this;
+        }
+
+        /**
+         * @param container_insights_enabled Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder container_insights_enabled(Boolean container_insights_enabled) {
+            return container_insights_enabled(Output.of(container_insights_enabled));
         }
 
         /**
@@ -1335,7 +1425,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param github_base_url GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+         * @param github_base_url GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
          * 
          * @return builder
          * 
@@ -1346,7 +1436,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param github_base_url GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+         * @param github_base_url GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
          * 
          * @return builder
          * 
@@ -1524,6 +1614,27 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
+         * @param messaging_kms_key_arn Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd &gt; 0.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder messaging_kms_key_arn(@Nullable Output<String> messaging_kms_key_arn) {
+            $.messaging_kms_key_arn = messaging_kms_key_arn;
+            return this;
+        }
+
+        /**
+         * @param messaging_kms_key_arn Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd &gt; 0.
+         * 
+         * @return builder
+         * 
+         */
+        public Builder messaging_kms_key_arn(String messaging_kms_key_arn) {
+            return messaging_kms_key_arn(Output.of(messaging_kms_key_arn));
+        }
+
+        /**
          * @param otel_exporter_endpoint OpenTelemetry exporter endpoint for observability (optional)
          * 
          * @return builder
@@ -1545,7 +1656,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param otel_exporter_headers OpenTelemetry exporter headers (optional)
+         * @param otel_exporter_headers OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
          * 
          * @return builder
          * 
@@ -1556,7 +1667,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param otel_exporter_headers OpenTelemetry exporter headers (optional)
+         * @param otel_exporter_headers OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
          * 
          * @return builder
          * 
@@ -1566,7 +1677,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param otel_exporter_temporality OTLP metrics temporality: cumulative (default) or delta
+         * @param otel_exporter_temporality OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
          * 
          * @return builder
          * 
@@ -1577,7 +1688,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param otel_exporter_temporality OTLP metrics temporality: cumulative (default) or delta
+         * @param otel_exporter_temporality OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
          * 
          * @return builder
          * 

@@ -117,6 +117,8 @@ func (ModuleState) ElementType() reflect.Type {
 type moduleArgs struct {
 	// Slack webhook URL for alert notifications (optional)
 	Alert_slack_webhook_url *string `pulumi:"alert_slack_webhook_url"`
+	// Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+	App_budget_daily_usd *float64 `pulumi:"app_budget_daily_usd"`
 	// Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
 	App_capacity_provider *string `pulumi:"app_capacity_provider"`
 	// Preset for the Fleet worker service, default EC2 launch concurrency, and default registration concurrency. Allowed values: small, medium, high, xhigh.
@@ -131,6 +133,8 @@ type moduleArgs struct {
 	Cache_bucket_versioning_enabled *bool `pulumi:"cache_bucket_versioning_enabled"`
 	// Number of days to retain cache artifacts.
 	Cache_expiration_days *float64 `pulumi:"cache_expiration_days"`
+	// Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+	Container_insights_enabled *bool `pulumi:"container_insights_enabled"`
 	// Tag key used for cost allocation.
 	Cost_allocation_tag *string `pulumi:"cost_allocation_tag"`
 	// Existing ECR pull-through cache rules to reference for Fleet runner image pulls. Create or import the regional rules outside the RunsOn module.
@@ -157,7 +161,7 @@ type moduleArgs struct {
 	Github_app_id *float64 `pulumi:"github_app_id"`
 	// GitHub App private key in PEM format.
 	Github_app_private_key *string `pulumi:"github_app_private_key"`
-	// GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+	// GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
 	Github_base_url *string `pulumi:"github_base_url"`
 	// GitHub Enterprise slug used when github_enterprise_pat is set.
 	Github_enterprise_name *string `pulumi:"github_enterprise_name"`
@@ -175,11 +179,13 @@ type moduleArgs struct {
 	Log_retention_days *float64 `pulumi:"log_retention_days"`
 	// Enable maintenance mode (disables queue processing and leader election)
 	Maintenance_mode *bool `pulumi:"maintenance_mode"`
+	// Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
+	Messaging_kms_key_arn *string `pulumi:"messaging_kms_key_arn"`
 	// OpenTelemetry exporter endpoint for observability (optional)
 	Otel_exporter_endpoint *string `pulumi:"otel_exporter_endpoint"`
-	// OpenTelemetry exporter headers (optional)
+	// OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
 	Otel_exporter_headers *string `pulumi:"otel_exporter_headers"`
-	// OTLP metrics temporality: cumulative (default) or delta
+	// OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
 	Otel_exporter_temporality *string `pulumi:"otel_exporter_temporality"`
 	// Enable OpenTelemetry log export
 	Otel_logs_enabled *bool `pulumi:"otel_logs_enabled"`
@@ -227,6 +233,8 @@ type moduleArgs struct {
 type ModuleArgs struct {
 	// Slack webhook URL for alert notifications (optional)
 	Alert_slack_webhook_url pulumi.StringPtrInput
+	// Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+	App_budget_daily_usd pulumi.Float64PtrInput
 	// Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
 	App_capacity_provider pulumi.StringPtrInput
 	// Preset for the Fleet worker service, default EC2 launch concurrency, and default registration concurrency. Allowed values: small, medium, high, xhigh.
@@ -241,6 +249,8 @@ type ModuleArgs struct {
 	Cache_bucket_versioning_enabled pulumi.BoolPtrInput
 	// Number of days to retain cache artifacts.
 	Cache_expiration_days pulumi.Float64PtrInput
+	// Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+	Container_insights_enabled pulumi.BoolPtrInput
 	// Tag key used for cost allocation.
 	Cost_allocation_tag pulumi.StringPtrInput
 	// Existing ECR pull-through cache rules to reference for Fleet runner image pulls. Create or import the regional rules outside the RunsOn module.
@@ -267,7 +277,7 @@ type ModuleArgs struct {
 	Github_app_id pulumi.Float64PtrInput
 	// GitHub App private key in PEM format.
 	Github_app_private_key pulumi.StringPtrInput
-	// GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+	// GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
 	Github_base_url pulumi.StringPtrInput
 	// GitHub Enterprise slug used when github_enterprise_pat is set.
 	Github_enterprise_name pulumi.StringPtrInput
@@ -285,11 +295,13 @@ type ModuleArgs struct {
 	Log_retention_days pulumi.Float64PtrInput
 	// Enable maintenance mode (disables queue processing and leader election)
 	Maintenance_mode pulumi.BoolPtrInput
+	// Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
+	Messaging_kms_key_arn pulumi.StringPtrInput
 	// OpenTelemetry exporter endpoint for observability (optional)
 	Otel_exporter_endpoint pulumi.StringPtrInput
-	// OpenTelemetry exporter headers (optional)
+	// OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
 	Otel_exporter_headers pulumi.StringPtrInput
-	// OTLP metrics temporality: cumulative (default) or delta
+	// OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
 	Otel_exporter_temporality pulumi.StringPtrInput
 	// Enable OpenTelemetry log export
 	Otel_logs_enabled pulumi.BoolPtrInput

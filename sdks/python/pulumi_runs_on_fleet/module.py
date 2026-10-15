@@ -27,6 +27,7 @@ class ModuleArgs:
                  stack_name: pulumi.Input[_builtins.str],
                  vpc_id: pulumi.Input[_builtins.str],
                  alert_slack_webhook_url: pulumi.Input[Optional[_builtins.str]] = None,
+                 app_budget_daily_usd: pulumi.Input[Optional[_builtins.float]] = None,
                  app_capacity_provider: pulumi.Input[Optional[_builtins.str]] = None,
                  app_size: pulumi.Input[Optional[_builtins.str]] = None,
                  app_tag: pulumi.Input[Optional[_builtins.str]] = None,
@@ -34,6 +35,7 @@ class ModuleArgs:
                  cache_bucket_namespace: pulumi.Input[Optional[_builtins.str]] = None,
                  cache_bucket_versioning_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  cache_expiration_days: pulumi.Input[Optional[_builtins.float]] = None,
+                 container_insights_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  cost_allocation_tag: pulumi.Input[Optional[_builtins.str]] = None,
                  ecr_pull_through_cache_rules: pulumi.Input[Optional[Mapping[str, pulumi.Input['EcrPullThroughCacheRulesArgs']]]] = None,
                  enable_bedrock: pulumi.Input[Optional[_builtins.bool]] = None,
@@ -53,6 +55,7 @@ class ModuleArgs:
                  ipv6_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  log_retention_days: pulumi.Input[Optional[_builtins.float]] = None,
                  maintenance_mode: pulumi.Input[Optional[_builtins.bool]] = None,
+                 messaging_kms_key_arn: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_endpoint: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_headers: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_temporality: pulumi.Input[Optional[_builtins.str]] = None,
@@ -83,6 +86,7 @@ class ModuleArgs:
         :param pulumi.Input[_builtins.str] stack_name: Name of the RunsOn Fleet stack.
         :param pulumi.Input[_builtins.str] vpc_id: VPC ID where the Fleet stack will run.
         :param pulumi.Input[_builtins.str] alert_slack_webhook_url: Slack webhook URL for alert notifications (optional)
+        :param pulumi.Input[_builtins.float] app_budget_daily_usd: Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
         :param pulumi.Input[_builtins.str] app_capacity_provider: Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
         :param pulumi.Input[_builtins.str] app_size: Preset for the Fleet worker service, default EC2 launch concurrency, and default registration concurrency. Allowed values: small, medium, high, xhigh.
         :param pulumi.Input[_builtins.str] app_tag: Application/agent tag published into the cache bucket and passed to runners. Passing null falls back to the default, which release publication pins to the released version.
@@ -90,6 +94,7 @@ class ModuleArgs:
         :param pulumi.Input[_builtins.str] cache_bucket_namespace: S3 namespace for the cache bucket. Use account-regional when an organization SCP requires account-regional S3 bucket names.
         :param pulumi.Input[_builtins.bool] cache_bucket_versioning_enabled: Enable S3 object versioning for the cache bucket.
         :param pulumi.Input[_builtins.float] cache_expiration_days: Number of days to retain cache artifacts.
+        :param pulumi.Input[_builtins.bool] container_insights_enabled: Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
         :param pulumi.Input[_builtins.str] cost_allocation_tag: Tag key used for cost allocation.
         :param pulumi.Input[Mapping[str, pulumi.Input['EcrPullThroughCacheRulesArgs']]] ecr_pull_through_cache_rules: Existing ECR pull-through cache rules to reference for Fleet runner image pulls. Create or import the regional rules outside the RunsOn module.
         :param pulumi.Input[_builtins.bool] enable_bedrock: Enable Amazon Bedrock access for EC2 runner instances.
@@ -101,7 +106,7 @@ class ModuleArgs:
         :param pulumi.Input[_builtins.bool] force_destroy_buckets: Allow the cache bucket to be destroyed while non-empty.
         :param pulumi.Input[_builtins.float] github_app_id: GitHub App ID used by the Fleet runtime.
         :param pulumi.Input[_builtins.str] github_app_private_key: GitHub App private key in PEM format.
-        :param pulumi.Input[_builtins.str] github_base_url: GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+        :param pulumi.Input[_builtins.str] github_base_url: GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
         :param pulumi.Input[_builtins.str] github_enterprise_name: GitHub Enterprise slug used when github_enterprise_pat is set.
         :param pulumi.Input[_builtins.str] github_enterprise_pat: Classic PAT used for enterprise-target Fleet mode. Must start with ghp_ when set.
         :param Any images: Custom runner image catalog keyed by image name. Built-in image names such as ubuntu24-full-x64 and ubuntu26-full-x64 do not need entries here.
@@ -109,9 +114,10 @@ class ModuleArgs:
         :param pulumi.Input[_builtins.bool] ipv6_enabled: Enable IPv6 on EC2 runner launch templates.
         :param pulumi.Input[_builtins.float] log_retention_days: CloudWatch Logs retention in days. Control-plane Lambda logs keep at least 14 days.
         :param pulumi.Input[_builtins.bool] maintenance_mode: Enable maintenance mode (disables queue processing and leader election)
+        :param pulumi.Input[_builtins.str] messaging_kms_key_arn: Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
         :param pulumi.Input[_builtins.str] otel_exporter_endpoint: OpenTelemetry exporter endpoint for observability (optional)
-        :param pulumi.Input[_builtins.str] otel_exporter_headers: OpenTelemetry exporter headers (optional)
-        :param pulumi.Input[_builtins.str] otel_exporter_temporality: OTLP metrics temporality: cumulative (default) or delta
+        :param pulumi.Input[_builtins.str] otel_exporter_headers: OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
+        :param pulumi.Input[_builtins.str] otel_exporter_temporality: OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
         :param pulumi.Input[_builtins.bool] otel_logs_enabled: Enable OpenTelemetry log export
         :param pulumi.Input[_builtins.str] otel_resource_attributes: Extra OTLP resource attributes as comma-separated key=value pairs, set as OTEL_RESOURCE_ATTRIBUTES. They override RunsOn defaults such as deployment.environment, except service.name. (optional)
         :param pulumi.Input[_builtins.bool] otel_traces_enabled: Enable OpenTelemetry trace export
@@ -138,6 +144,8 @@ class ModuleArgs:
         pulumi.set(__self__, "vpc_id", vpc_id)
         if alert_slack_webhook_url is not None:
             pulumi.set(__self__, "alert_slack_webhook_url", alert_slack_webhook_url)
+        if app_budget_daily_usd is not None:
+            pulumi.set(__self__, "app_budget_daily_usd", app_budget_daily_usd)
         if app_capacity_provider is not None:
             pulumi.set(__self__, "app_capacity_provider", app_capacity_provider)
         if app_size is not None:
@@ -152,6 +160,8 @@ class ModuleArgs:
             pulumi.set(__self__, "cache_bucket_versioning_enabled", cache_bucket_versioning_enabled)
         if cache_expiration_days is not None:
             pulumi.set(__self__, "cache_expiration_days", cache_expiration_days)
+        if container_insights_enabled is not None:
+            pulumi.set(__self__, "container_insights_enabled", container_insights_enabled)
         if cost_allocation_tag is not None:
             pulumi.set(__self__, "cost_allocation_tag", cost_allocation_tag)
         if ecr_pull_through_cache_rules is not None:
@@ -190,6 +200,8 @@ class ModuleArgs:
             pulumi.set(__self__, "log_retention_days", log_retention_days)
         if maintenance_mode is not None:
             pulumi.set(__self__, "maintenance_mode", maintenance_mode)
+        if messaging_kms_key_arn is not None:
+            pulumi.set(__self__, "messaging_kms_key_arn", messaging_kms_key_arn)
         if otel_exporter_endpoint is not None:
             pulumi.set(__self__, "otel_exporter_endpoint", otel_exporter_endpoint)
         if otel_exporter_headers is not None:
@@ -317,6 +329,18 @@ class ModuleArgs:
 
     @_builtins.property
     @pulumi.getter
+    def app_budget_daily_usd(self) -> pulumi.Input[Optional[_builtins.float]]:
+        """
+        Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+        """
+        return pulumi.get(self, "app_budget_daily_usd")
+
+    @app_budget_daily_usd.setter
+    def app_budget_daily_usd(self, value: pulumi.Input[Optional[_builtins.float]]):
+        pulumi.set(self, "app_budget_daily_usd", value)
+
+    @_builtins.property
+    @pulumi.getter
     def app_capacity_provider(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
         Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
@@ -398,6 +422,18 @@ class ModuleArgs:
     @cache_expiration_days.setter
     def cache_expiration_days(self, value: pulumi.Input[Optional[_builtins.float]]):
         pulumi.set(self, "cache_expiration_days", value)
+
+    @_builtins.property
+    @pulumi.getter
+    def container_insights_enabled(self) -> pulumi.Input[Optional[_builtins.bool]]:
+        """
+        Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+        """
+        return pulumi.get(self, "container_insights_enabled")
+
+    @container_insights_enabled.setter
+    def container_insights_enabled(self, value: pulumi.Input[Optional[_builtins.bool]]):
+        pulumi.set(self, "container_insights_enabled", value)
 
     @_builtins.property
     @pulumi.getter
@@ -535,7 +571,7 @@ class ModuleArgs:
     @pulumi.getter
     def github_base_url(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+        GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
         """
         return pulumi.get(self, "github_base_url")
 
@@ -629,6 +665,18 @@ class ModuleArgs:
 
     @_builtins.property
     @pulumi.getter
+    def messaging_kms_key_arn(self) -> pulumi.Input[Optional[_builtins.str]]:
+        """
+        Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
+        """
+        return pulumi.get(self, "messaging_kms_key_arn")
+
+    @messaging_kms_key_arn.setter
+    def messaging_kms_key_arn(self, value: pulumi.Input[Optional[_builtins.str]]):
+        pulumi.set(self, "messaging_kms_key_arn", value)
+
+    @_builtins.property
+    @pulumi.getter
     def otel_exporter_endpoint(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
         OpenTelemetry exporter endpoint for observability (optional)
@@ -643,7 +691,7 @@ class ModuleArgs:
     @pulumi.getter
     def otel_exporter_headers(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        OpenTelemetry exporter headers (optional)
+        OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
         """
         return pulumi.get(self, "otel_exporter_headers")
 
@@ -655,7 +703,7 @@ class ModuleArgs:
     @pulumi.getter
     def otel_exporter_temporality(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        OTLP metrics temporality: cumulative (default) or delta
+        OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
         """
         return pulumi.get(self, "otel_exporter_temporality")
 
@@ -875,6 +923,7 @@ class Module(pulumi.CustomResource):
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
                  alert_slack_webhook_url: pulumi.Input[Optional[_builtins.str]] = None,
+                 app_budget_daily_usd: pulumi.Input[Optional[_builtins.float]] = None,
                  app_capacity_provider: pulumi.Input[Optional[_builtins.str]] = None,
                  app_size: pulumi.Input[Optional[_builtins.str]] = None,
                  app_tag: pulumi.Input[Optional[_builtins.str]] = None,
@@ -882,6 +931,7 @@ class Module(pulumi.CustomResource):
                  cache_bucket_namespace: pulumi.Input[Optional[_builtins.str]] = None,
                  cache_bucket_versioning_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  cache_expiration_days: pulumi.Input[Optional[_builtins.float]] = None,
+                 container_insights_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  cost_allocation_tag: pulumi.Input[Optional[_builtins.str]] = None,
                  ecr_pull_through_cache_rules: pulumi.Input[Optional[Mapping[str, pulumi.Input[Union['EcrPullThroughCacheRulesArgs', 'EcrPullThroughCacheRulesArgsDict']]]]] = None,
                  email: pulumi.Input[Optional[_builtins.str]] = None,
@@ -904,6 +954,7 @@ class Module(pulumi.CustomResource):
                  license_key: pulumi.Input[Optional[_builtins.str]] = None,
                  log_retention_days: pulumi.Input[Optional[_builtins.float]] = None,
                  maintenance_mode: pulumi.Input[Optional[_builtins.bool]] = None,
+                 messaging_kms_key_arn: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_endpoint: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_headers: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_temporality: pulumi.Input[Optional[_builtins.str]] = None,
@@ -934,6 +985,7 @@ class Module(pulumi.CustomResource):
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[_builtins.str] alert_slack_webhook_url: Slack webhook URL for alert notifications (optional)
+        :param pulumi.Input[_builtins.float] app_budget_daily_usd: Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
         :param pulumi.Input[_builtins.str] app_capacity_provider: Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
         :param pulumi.Input[_builtins.str] app_size: Preset for the Fleet worker service, default EC2 launch concurrency, and default registration concurrency. Allowed values: small, medium, high, xhigh.
         :param pulumi.Input[_builtins.str] app_tag: Application/agent tag published into the cache bucket and passed to runners. Passing null falls back to the default, which release publication pins to the released version.
@@ -941,6 +993,7 @@ class Module(pulumi.CustomResource):
         :param pulumi.Input[_builtins.str] cache_bucket_namespace: S3 namespace for the cache bucket. Use account-regional when an organization SCP requires account-regional S3 bucket names.
         :param pulumi.Input[_builtins.bool] cache_bucket_versioning_enabled: Enable S3 object versioning for the cache bucket.
         :param pulumi.Input[_builtins.float] cache_expiration_days: Number of days to retain cache artifacts.
+        :param pulumi.Input[_builtins.bool] container_insights_enabled: Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
         :param pulumi.Input[_builtins.str] cost_allocation_tag: Tag key used for cost allocation.
         :param pulumi.Input[Mapping[str, pulumi.Input[Union['EcrPullThroughCacheRulesArgs', 'EcrPullThroughCacheRulesArgsDict']]]] ecr_pull_through_cache_rules: Existing ECR pull-through cache rules to reference for Fleet runner image pulls. Create or import the regional rules outside the RunsOn module.
         :param pulumi.Input[_builtins.str] email: Email address for alerts and notifications (requires confirmation)
@@ -954,7 +1007,7 @@ class Module(pulumi.CustomResource):
         :param pulumi.Input[_builtins.bool] force_destroy_buckets: Allow the cache bucket to be destroyed while non-empty.
         :param pulumi.Input[_builtins.float] github_app_id: GitHub App ID used by the Fleet runtime.
         :param pulumi.Input[_builtins.str] github_app_private_key: GitHub App private key in PEM format.
-        :param pulumi.Input[_builtins.str] github_base_url: GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+        :param pulumi.Input[_builtins.str] github_base_url: GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
         :param pulumi.Input[_builtins.str] github_enterprise_name: GitHub Enterprise slug used when github_enterprise_pat is set.
         :param pulumi.Input[_builtins.str] github_enterprise_pat: Classic PAT used for enterprise-target Fleet mode. Must start with ghp_ when set.
         :param Any images: Custom runner image catalog keyed by image name. Built-in image names such as ubuntu24-full-x64 and ubuntu26-full-x64 do not need entries here.
@@ -963,9 +1016,10 @@ class Module(pulumi.CustomResource):
         :param pulumi.Input[_builtins.str] license_key: RunsOn license key obtained from runs-on.com
         :param pulumi.Input[_builtins.float] log_retention_days: CloudWatch Logs retention in days. Control-plane Lambda logs keep at least 14 days.
         :param pulumi.Input[_builtins.bool] maintenance_mode: Enable maintenance mode (disables queue processing and leader election)
+        :param pulumi.Input[_builtins.str] messaging_kms_key_arn: Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
         :param pulumi.Input[_builtins.str] otel_exporter_endpoint: OpenTelemetry exporter endpoint for observability (optional)
-        :param pulumi.Input[_builtins.str] otel_exporter_headers: OpenTelemetry exporter headers (optional)
-        :param pulumi.Input[_builtins.str] otel_exporter_temporality: OTLP metrics temporality: cumulative (default) or delta
+        :param pulumi.Input[_builtins.str] otel_exporter_headers: OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
+        :param pulumi.Input[_builtins.str] otel_exporter_temporality: OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
         :param pulumi.Input[_builtins.bool] otel_logs_enabled: Enable OpenTelemetry log export
         :param pulumi.Input[_builtins.str] otel_resource_attributes: Extra OTLP resource attributes as comma-separated key=value pairs, set as OTEL_RESOURCE_ATTRIBUTES. They override RunsOn defaults such as deployment.environment, except service.name. (optional)
         :param pulumi.Input[_builtins.bool] otel_traces_enabled: Enable OpenTelemetry trace export
@@ -1012,6 +1066,7 @@ class Module(pulumi.CustomResource):
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
                  alert_slack_webhook_url: pulumi.Input[Optional[_builtins.str]] = None,
+                 app_budget_daily_usd: pulumi.Input[Optional[_builtins.float]] = None,
                  app_capacity_provider: pulumi.Input[Optional[_builtins.str]] = None,
                  app_size: pulumi.Input[Optional[_builtins.str]] = None,
                  app_tag: pulumi.Input[Optional[_builtins.str]] = None,
@@ -1019,6 +1074,7 @@ class Module(pulumi.CustomResource):
                  cache_bucket_namespace: pulumi.Input[Optional[_builtins.str]] = None,
                  cache_bucket_versioning_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  cache_expiration_days: pulumi.Input[Optional[_builtins.float]] = None,
+                 container_insights_enabled: pulumi.Input[Optional[_builtins.bool]] = None,
                  cost_allocation_tag: pulumi.Input[Optional[_builtins.str]] = None,
                  ecr_pull_through_cache_rules: pulumi.Input[Optional[Mapping[str, pulumi.Input[Union['EcrPullThroughCacheRulesArgs', 'EcrPullThroughCacheRulesArgsDict']]]]] = None,
                  email: pulumi.Input[Optional[_builtins.str]] = None,
@@ -1041,6 +1097,7 @@ class Module(pulumi.CustomResource):
                  license_key: pulumi.Input[Optional[_builtins.str]] = None,
                  log_retention_days: pulumi.Input[Optional[_builtins.float]] = None,
                  maintenance_mode: pulumi.Input[Optional[_builtins.bool]] = None,
+                 messaging_kms_key_arn: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_endpoint: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_headers: pulumi.Input[Optional[_builtins.str]] = None,
                  otel_exporter_temporality: pulumi.Input[Optional[_builtins.str]] = None,
@@ -1074,6 +1131,7 @@ class Module(pulumi.CustomResource):
             __props__ = ModuleArgs.__new__(ModuleArgs)
 
             __props__.__dict__["alert_slack_webhook_url"] = None if alert_slack_webhook_url is None else pulumi.Output.secret(alert_slack_webhook_url)
+            __props__.__dict__["app_budget_daily_usd"] = app_budget_daily_usd
             __props__.__dict__["app_capacity_provider"] = app_capacity_provider
             __props__.__dict__["app_size"] = app_size
             __props__.__dict__["app_tag"] = app_tag
@@ -1081,6 +1139,7 @@ class Module(pulumi.CustomResource):
             __props__.__dict__["cache_bucket_namespace"] = cache_bucket_namespace
             __props__.__dict__["cache_bucket_versioning_enabled"] = cache_bucket_versioning_enabled
             __props__.__dict__["cache_expiration_days"] = cache_expiration_days
+            __props__.__dict__["container_insights_enabled"] = container_insights_enabled
             __props__.__dict__["cost_allocation_tag"] = cost_allocation_tag
             __props__.__dict__["ecr_pull_through_cache_rules"] = ecr_pull_through_cache_rules
             if email is None and not opts.urn:
@@ -1109,6 +1168,7 @@ class Module(pulumi.CustomResource):
             __props__.__dict__["license_key"] = None if license_key is None else pulumi.Output.secret(license_key)
             __props__.__dict__["log_retention_days"] = log_retention_days
             __props__.__dict__["maintenance_mode"] = maintenance_mode
+            __props__.__dict__["messaging_kms_key_arn"] = messaging_kms_key_arn
             __props__.__dict__["otel_exporter_endpoint"] = otel_exporter_endpoint
             __props__.__dict__["otel_exporter_headers"] = None if otel_exporter_headers is None else pulumi.Output.secret(otel_exporter_headers)
             __props__.__dict__["otel_exporter_temporality"] = otel_exporter_temporality

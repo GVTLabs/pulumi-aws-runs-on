@@ -101,7 +101,7 @@ export async function getPackage(): Promise<string | undefined> {
 		baseProviderVersion: "0.2.2",
 		baseProviderDownloadUrl: "",
 		packageName: "runs-on-fleet",
-		packageVersion: "3.4.0",
-		base64Parameter: "ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy40LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9",
+		packageVersion: "3.5.0",
+		base64Parameter: "ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy41LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9",
 	});
 }

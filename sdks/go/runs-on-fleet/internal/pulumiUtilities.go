@@ -167,8 +167,8 @@ func callPlainInner(
 // The reference is cached per pulumi.Context so that concurrent inline
 // programs each register with their own engine and receive distinct refs.
 func PkgGetPackageRef(ctx *pulumi.Context) (string, error) {
-	return ctx.GetOrRegisterPackageRef("runs-on-fleet:3.4.0", func() (*pulumirpc.RegisterPackageRequest, error) {
-		parameter, err := base64.StdEncoding.DecodeString("ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy40LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9")
+	return ctx.GetOrRegisterPackageRef("runs-on-fleet:3.5.0", func() (*pulumirpc.RegisterPackageRequest, error) {
+		parameter, err := base64.StdEncoding.DecodeString("ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy41LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9")
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +179,7 @@ func PkgGetPackageRef(ctx *pulumi.Context) (string, error) {
 			DownloadUrl: "",
 			Parameterization: &pulumirpc.Parameterization{
 				Name:    "runs-on-fleet",
-				Version: "3.4.0",
+				Version: "3.5.0",
 				Value:   parameter,
 			},
 		}, nil
@@ -190,7 +190,7 @@ func PkgGetPackageRef(ctx *pulumi.Context) (string, error) {
 func PkgResourceDefaultOpts(opts []pulumi.ResourceOption) []pulumi.ResourceOption {
 	defaults := []pulumi.ResourceOption{}
 
-	version := semver.MustParse("3.4.0")
+	version := semver.MustParse("3.5.0")
 	if !version.Equals(semver.Version{}) {
 		defaults = append(defaults, pulumi.Version(version.String()))
 	}
@@ -201,7 +201,7 @@ func PkgResourceDefaultOpts(opts []pulumi.ResourceOption) []pulumi.ResourceOptio
 func PkgInvokeDefaultOpts(opts []pulumi.InvokeOption) []pulumi.InvokeOption {
 	defaults := []pulumi.InvokeOption{}
 
-	version := semver.MustParse("3.4.0")
+	version := semver.MustParse("3.5.0")
 	if !version.Equals(semver.Version{}) {
 		defaults = append(defaults, pulumi.Version(version.String()))
 	}

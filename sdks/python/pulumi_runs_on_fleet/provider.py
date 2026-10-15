@@ -86,7 +86,7 @@ class Provider(pulumi.ProviderResource):
                  random: pulumi.Input[Optional[Mapping[str, Any]]] = None,
                  __props__=None):
         """
-        Create a Runs-on-fleet resource with the given unique name, props, and options.
+        Create a RunsOnFleet resource with the given unique name, props, and options.
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
@@ -101,7 +101,7 @@ class Provider(pulumi.ProviderResource):
                  args: Optional[ProviderArgs] = None,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        Create a Runs-on-fleet resource with the given unique name, props, and options.
+        Create a RunsOnFleet resource with the given unique name, props, and options.
 
         :param str resource_name: The name of the resource.
         :param ProviderArgs args: The arguments to use to populate this resource's properties.

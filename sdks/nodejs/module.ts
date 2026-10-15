@@ -92,6 +92,7 @@ export class Module extends pulumi.CustomResource {
                 throw new Error("Missing required property 'vpc_id'");
             }
             resourceInputs["alert_slack_webhook_url"] = args?.alert_slack_webhook_url ? pulumi.secret(args.alert_slack_webhook_url) : undefined;
+            resourceInputs["app_budget_daily_usd"] = args?.app_budget_daily_usd;
             resourceInputs["app_capacity_provider"] = args?.app_capacity_provider;
             resourceInputs["app_size"] = args?.app_size;
             resourceInputs["app_tag"] = args?.app_tag;
@@ -99,6 +100,7 @@ export class Module extends pulumi.CustomResource {
             resourceInputs["cache_bucket_namespace"] = args?.cache_bucket_namespace;
             resourceInputs["cache_bucket_versioning_enabled"] = args?.cache_bucket_versioning_enabled;
             resourceInputs["cache_expiration_days"] = args?.cache_expiration_days;
+            resourceInputs["container_insights_enabled"] = args?.container_insights_enabled;
             resourceInputs["cost_allocation_tag"] = args?.cost_allocation_tag;
             resourceInputs["ecr_pull_through_cache_rules"] = args?.ecr_pull_through_cache_rules;
             resourceInputs["email"] = args?.email;
@@ -121,6 +123,7 @@ export class Module extends pulumi.CustomResource {
             resourceInputs["license_key"] = args?.license_key ? pulumi.secret(args.license_key) : undefined;
             resourceInputs["log_retention_days"] = args?.log_retention_days;
             resourceInputs["maintenance_mode"] = args?.maintenance_mode;
+            resourceInputs["messaging_kms_key_arn"] = args?.messaging_kms_key_arn;
             resourceInputs["otel_exporter_endpoint"] = args?.otel_exporter_endpoint;
             resourceInputs["otel_exporter_headers"] = args?.otel_exporter_headers ? pulumi.secret(args.otel_exporter_headers) : undefined;
             resourceInputs["otel_exporter_temporality"] = args?.otel_exporter_temporality;
@@ -174,6 +177,10 @@ export interface ModuleArgs {
      */
     alert_slack_webhook_url?: pulumi.Input<string | undefined>;
     /**
+     * Daily AWS cost budget in USD for this stack, filtered by the configured cost allocation tag. Set to 0 to disable the budget. Fleet does not activate the cost allocation tag: activate it in AWS Billing (in the management account for AWS Organizations member accounts), or the budget sees no spend.
+     */
+    app_budget_daily_usd?: pulumi.Input<number | undefined>;
+    /**
      * Fargate capacity provider for the Fleet worker service. Use fargate_spot to lower idle cost for small installs; interrupted in-flight assigned jobs are reconciled by the Fleet runtime.
      */
     app_capacity_provider?: pulumi.Input<string | undefined>;
@@ -201,6 +208,10 @@ export interface ModuleArgs {
      * Number of days to retain cache artifacts.
      */
     cache_expiration_days?: pulumi.Input<number | undefined>;
+    /**
+     * Enable ECS Container Insights on the control-plane cluster. Disabled by default: Container Insights publishes custom CloudWatch metrics billed per metric, a fixed cost the RunsOn dashboards do not need.
+     */
+    container_insights_enabled?: pulumi.Input<boolean | undefined>;
     /**
      * Tag key used for cost allocation.
      */
@@ -254,7 +265,7 @@ export interface ModuleArgs {
      */
     github_app_private_key?: pulumi.Input<string | undefined>;
     /**
-     * GitHub web host root URL. Leave the default for github.com, or set a GHE.com data-residency or GHES host.
+     * GitHub web host root URL (https). Leave the default for github.com, or set a GHE.com data-residency or GHES host.
      */
     github_base_url?: pulumi.Input<string | undefined>;
     /**
@@ -290,15 +301,19 @@ export interface ModuleArgs {
      */
     maintenance_mode?: pulumi.Input<boolean | undefined>;
     /**
+     * Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
+     */
+    messaging_kms_key_arn?: pulumi.Input<string | undefined>;
+    /**
      * OpenTelemetry exporter endpoint for observability (optional)
      */
     otel_exporter_endpoint?: pulumi.Input<string | undefined>;
     /**
-     * OpenTelemetry exporter headers (optional)
+     * OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
      */
     otel_exporter_headers?: pulumi.Input<string | undefined>;
     /**
-     * OTLP metrics temporality: cumulative (default) or delta
+     * OTLP metrics temporality: cumulative (default, for Prometheus-compatible backends) or delta (recommended for SigNoz, required by Datadog). Delta applies to counters and histograms; up-down counters stay cumulative.
      */
     otel_exporter_temporality?: pulumi.Input<string | undefined>;
     /**

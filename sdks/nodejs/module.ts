@@ -19,6 +19,16 @@ export class Module extends pulumi.CustomResource {
         return new Module(name, undefined as any, { ...opts, id: id });
     }
 
+    /**
+     * Check whether an existing Module resource with the given ID exists.
+     *
+     * @param id The _unique_ provider ID of the resource to check.
+     * @param opts Optional settings to control the behavior of the CustomResource.
+     */
+    public static exists(id: pulumi.Input<string>, opts?: pulumi.CustomResourceOptions): pulumi.Output<boolean> {
+        return pulumi.runtime.existsResource("runs-on-fleet:index:Module", id, {}, { ...opts }, utilities.getPackage());
+    }
+
     /** @internal */
     public static readonly __pulumiType = 'runs-on-fleet:index:Module';
 
@@ -297,7 +307,7 @@ export interface ModuleArgs {
      */
     log_retention_days?: pulumi.Input<number | undefined>;
     /**
-     * Enable maintenance mode (disables queue processing and leader election)
+     * Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
      */
     maintenance_mode?: pulumi.Input<boolean | undefined>;
     /**
@@ -369,7 +379,7 @@ export interface ModuleArgs {
      */
     security_group_ids?: pulumi.Input<pulumi.Input<string>[] | undefined>;
     /**
-     * Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+     * Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
      */
     spot_circuit_breaker?: pulumi.Input<string | undefined>;
     /**

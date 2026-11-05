@@ -1,11 +1,11 @@
 {
     "name": "@pulumi/runs-on-fleet",
-    "version": "3.5.1",
+    "version": "3.6.0",
     "scripts": {
         "build": "tsc"
     },
     "dependencies": {
-        "@pulumi/pulumi": "^3.238.0"
+        "@pulumi/pulumi": "^3.269.0"
     },
     "devDependencies": {
         "@types/node": "^20",
@@ -17,8 +17,8 @@
         "version": "0.2.2",
         "parameterization": {
             "name": "runs-on-fleet",
-            "version": "3.5.1",
-            "value": "ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy41LjEiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9"
+            "version": "3.6.0",
+            "value": "ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy42LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9"
         }
     }
 }

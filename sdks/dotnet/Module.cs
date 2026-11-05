@@ -348,7 +348,7 @@ namespace Pulumi.RunsOnFleet
         public Input<double>? Log_retention_days { get; set; }
 
         /// <summary>
-        /// Enable maintenance mode (disables queue processing and leader election)
+        /// Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
         /// </summary>
         [Input("maintenance_mode")]
         public Input<bool>? Maintenance_mode { get; set; }
@@ -496,7 +496,7 @@ namespace Pulumi.RunsOnFleet
         }
 
         /// <summary>
-        /// Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+        /// Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
         /// </summary>
         [Input("spot_circuit_breaker")]
         public Input<string>? Spot_circuit_breaker { get; set; }

@@ -113,7 +113,7 @@ class ModuleArgs:
         :param pulumi.Input[_builtins.str] integration_step_security_api_key: API key for StepSecurity integration (optional).
         :param pulumi.Input[_builtins.bool] ipv6_enabled: Enable IPv6 on EC2 runner launch templates.
         :param pulumi.Input[_builtins.float] log_retention_days: CloudWatch Logs retention in days. Control-plane Lambda logs keep at least 14 days.
-        :param pulumi.Input[_builtins.bool] maintenance_mode: Enable maintenance mode (disables queue processing and leader election)
+        :param pulumi.Input[_builtins.bool] maintenance_mode: Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
         :param pulumi.Input[_builtins.str] messaging_kms_key_arn: Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
         :param pulumi.Input[_builtins.str] otel_exporter_endpoint: OpenTelemetry exporter endpoint for observability (optional)
         :param pulumi.Input[_builtins.str] otel_exporter_headers: OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
@@ -130,7 +130,7 @@ class ModuleArgs:
         :param pulumi.Input[_builtins.float] runner_max_runtime: Maximum runtime in minutes passed to the shared compute bootstrap template.
         :param pulumi.Input[_builtins.str] runtime_image: RunsOn worker image containing the fleetd binary. Override with a runs-on-ci image for live validation. Passing null falls back to the default, which release publication pins to the released image.
         :param pulumi.Input[Sequence[pulumi.Input[_builtins.str]]] security_group_ids: Security group IDs for runners and the Fleet worker. Leave empty to create a dedicated group.
-        :param pulumi.Input[_builtins.str] spot_circuit_breaker: Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+        :param pulumi.Input[_builtins.str] spot_circuit_breaker: Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
         :param pulumi.Input[_builtins.bool] ssh_allowed: Allow SSH ingress when the module creates its own security group.
         :param pulumi.Input[_builtins.str] ssh_cidr_range: CIDR range allowed for SSH access when the module creates its own security group.
         :param pulumi.Input[_builtins.bool] ssm_allowed: Enable SSM access for runner instances. When true, this attaches AmazonSSMManagedEC2InstanceDefaultPolicy to the runner instance role.
@@ -655,7 +655,7 @@ class ModuleArgs:
     @pulumi.getter
     def maintenance_mode(self) -> pulumi.Input[Optional[_builtins.bool]]:
         """
-        Enable maintenance mode (disables queue processing and leader election)
+        Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
         """
         return pulumi.get(self, "maintenance_mode")
 
@@ -859,7 +859,7 @@ class ModuleArgs:
     @pulumi.getter
     def spot_circuit_breaker(self) -> pulumi.Input[Optional[_builtins.str]]:
         """
-        Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+        Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
         """
         return pulumi.get(self, "spot_circuit_breaker")
 
@@ -1015,7 +1015,7 @@ class Module(pulumi.CustomResource):
         :param pulumi.Input[_builtins.bool] ipv6_enabled: Enable IPv6 on EC2 runner launch templates.
         :param pulumi.Input[_builtins.str] license_key: RunsOn license key obtained from runs-on.com
         :param pulumi.Input[_builtins.float] log_retention_days: CloudWatch Logs retention in days. Control-plane Lambda logs keep at least 14 days.
-        :param pulumi.Input[_builtins.bool] maintenance_mode: Enable maintenance mode (disables queue processing and leader election)
+        :param pulumi.Input[_builtins.bool] maintenance_mode: Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
         :param pulumi.Input[_builtins.str] messaging_kms_key_arn: Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
         :param pulumi.Input[_builtins.str] otel_exporter_endpoint: OpenTelemetry exporter endpoint for observability (optional)
         :param pulumi.Input[_builtins.str] otel_exporter_headers: OpenTelemetry exporter headers as comma-separated key=value pairs, as in OTEL_EXPORTER_OTLP_HEADERS. Values may be percent-encoded: authorization=Bearer%20KEY and authorization=Bearer KEY are equivalent (optional)
@@ -1033,7 +1033,7 @@ class Module(pulumi.CustomResource):
         :param Any runners: Runner catalog keyed by runner name. Entries must use fields supported by Fleet's RunnerSpec.
         :param pulumi.Input[_builtins.str] runtime_image: RunsOn worker image containing the fleetd binary. Override with a runs-on-ci image for live validation. Passing null falls back to the default, which release publication pins to the released image.
         :param pulumi.Input[Sequence[pulumi.Input[_builtins.str]]] security_group_ids: Security group IDs for runners and the Fleet worker. Leave empty to create a dedicated group.
-        :param pulumi.Input[_builtins.str] spot_circuit_breaker: Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+        :param pulumi.Input[_builtins.str] spot_circuit_breaker: Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
         :param pulumi.Input[_builtins.bool] ssh_allowed: Allow SSH ingress when the module creates its own security group.
         :param pulumi.Input[_builtins.str] ssh_cidr_range: CIDR range allowed for SSH access when the module creates its own security group.
         :param pulumi.Input[_builtins.bool] ssm_allowed: Enable SSM access for runner instances. When true, this attaches AmazonSSMManagedEC2InstanceDefaultPolicy to the runner instance role.
@@ -1236,6 +1236,12 @@ class Module(pulumi.CustomResource):
         __props__.__dict__["stack"] = None
         __props__.__dict__["workflow_contract"] = None
         return Module(resource_name, opts=opts, __props__=__props__)
+
+    @staticmethod
+    def exists(id: pulumi.Input[str],
+            opts: Optional[pulumi.ResourceOptions] = None) -> pulumi.Output[bool]:
+        __props__: dict = {}
+        return pulumi.runtime.exists_resource(None, 'runs-on-fleet:index:Module', id, __props__, opts or pulumi.ResourceOptions(), package_ref=_utilities.get_package())
 
     @_builtins.property
     @pulumi.getter

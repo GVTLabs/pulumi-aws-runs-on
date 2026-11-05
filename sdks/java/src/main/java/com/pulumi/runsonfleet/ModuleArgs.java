@@ -488,14 +488,14 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
-     * Enable maintenance mode (disables queue processing and leader election)
+     * Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
      * 
      */
     @Import(name="maintenance_mode")
     private @Nullable Output<Boolean> maintenance_mode;
 
     /**
-     * @return Enable maintenance mode (disables queue processing and leader election)
+     * @return Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
      * 
      */
     public Optional<Output<Boolean>> maintenance_mode() {
@@ -758,14 +758,14 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
     }
 
     /**
-     * Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
+     * Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
      * 
      */
     @Import(name="spot_circuit_breaker")
     private @Nullable Output<String> spot_circuit_breaker;
 
     /**
-     * @return Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
+     * @return Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
      * 
      */
     public Optional<Output<String>> spot_circuit_breaker() {
@@ -1593,7 +1593,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param maintenance_mode Enable maintenance mode (disables queue processing and leader election)
+         * @param maintenance_mode Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
          * 
          * @return builder
          * 
@@ -1604,7 +1604,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param maintenance_mode Enable maintenance mode (disables queue processing and leader election)
+         * @param maintenance_mode Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
          * 
          * @return builder
          * 
@@ -2021,7 +2021,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param spot_circuit_breaker Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
+         * @param spot_circuit_breaker Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
          * 
          * @return builder
          * 
@@ -2032,7 +2032,7 @@ public final class ModuleArgs extends com.pulumi.resources.ResourceArgs {
         }
 
         /**
-         * @param spot_circuit_breaker Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
+         * @param spot_circuit_breaker Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. &#34;false&#34; disables it; empty uses the built-in default &#34;2/15/30&#34; (same semantics as the Flex SpotCircuitBreaker stack parameter).
          * 
          * @return builder
          * 

@@ -114,6 +114,18 @@ func (ModuleState) ElementType() reflect.Type {
 	return reflect.TypeOf((*moduleState)(nil)).Elem()
 }
 
+// ModuleExists checks whether an existing Module resource with the given ID exists.
+func ModuleExists(ctx *pulumi.Context,
+	id pulumi.StringInput, state *ModuleState, opts ...pulumi.ResourceOption) pulumi.BoolOutput {
+	ref, err := internal.PkgGetPackageRef(ctx)
+	if err != nil {
+		return pulumi.Bool(false).ToBoolOutput().ApplyT(func(bool) (bool, error) {
+			return false, err
+		}).(pulumi.BoolOutput)
+	}
+	return ctx.ExistsResource("runs-on-fleet:index:Module", id, state, ref, opts...)
+}
+
 type moduleArgs struct {
 	// Slack webhook URL for alert notifications (optional)
 	Alert_slack_webhook_url *string `pulumi:"alert_slack_webhook_url"`
@@ -177,7 +189,7 @@ type moduleArgs struct {
 	License_key string `pulumi:"license_key"`
 	// CloudWatch Logs retention in days. Control-plane Lambda logs keep at least 14 days.
 	Log_retention_days *float64 `pulumi:"log_retention_days"`
-	// Enable maintenance mode (disables queue processing and leader election)
+	// Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
 	Maintenance_mode *bool `pulumi:"maintenance_mode"`
 	// Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
 	Messaging_kms_key_arn *string `pulumi:"messaging_kms_key_arn"`
@@ -213,7 +225,7 @@ type moduleArgs struct {
 	Runtime_image *string `pulumi:"runtime_image"`
 	// Security group IDs for runners and the Fleet worker. Leave empty to create a dedicated group.
 	Security_group_ids []string `pulumi:"security_group_ids"`
-	// Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+	// Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
 	Spot_circuit_breaker *string `pulumi:"spot_circuit_breaker"`
 	// Allow SSH ingress when the module creates its own security group.
 	Ssh_allowed *bool `pulumi:"ssh_allowed"`
@@ -293,7 +305,7 @@ type ModuleArgs struct {
 	License_key pulumi.StringInput
 	// CloudWatch Logs retention in days. Control-plane Lambda logs keep at least 14 days.
 	Log_retention_days pulumi.Float64PtrInput
-	// Enable maintenance mode (disables queue processing and leader election)
+	// Enable maintenance mode: scales the Fleet controller to zero. Scale set sessions close, new jobs wait on GitHub, and running jobs finish
 	Maintenance_mode pulumi.BoolPtrInput
 	// Customer-managed KMS key ARN used to encrypt the SNS alerts topic (Fleet creates no SQS queues). Leave empty for no SSE on the topic (SNS default disk encryption only). The module grants RunsOn roles access through IAM, so the key policy must delegate to IAM in this account, and must allow budgets.amazonaws.com kms:GenerateDataKey and kms:Decrypt when app_budget_daily_usd > 0.
 	Messaging_kms_key_arn pulumi.StringPtrInput
@@ -329,7 +341,7 @@ type ModuleArgs struct {
 	Runtime_image pulumi.StringPtrInput
 	// Security group IDs for runners and the Fleet worker. Leave empty to create a dedicated group.
 	Security_group_ids pulumi.StringArrayInput
-	// Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES: after COUNT spot interruptions within WINDOW_MINUTES, launch on-demand for RECOVERY_MINUTES. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
+	// Spot circuit breaker for Fleet launches, formatted as COUNT/WINDOW_MINUTES/RECOVERY_MINUTES and counted per instance family: after COUNT spot interruptions of one family within WINDOW_MINUTES, that family launches on-demand for RECOVERY_MINUTES, and a target goes on-demand once all its families are paused. "false" disables it; empty uses the built-in default "2/15/30" (same semantics as the Flex SpotCircuitBreaker stack parameter).
 	Spot_circuit_breaker pulumi.StringPtrInput
 	// Allow SSH ingress when the module creates its own security group.
 	Ssh_allowed pulumi.BoolPtrInput

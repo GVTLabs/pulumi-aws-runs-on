@@ -325,7 +325,7 @@ def get_plugin_download_url():
 	return None
 
 def get_version():
-    return "3.6.0"
+    return "3.6.1"
 
 async def get_package() -> str:
 	return await pulumi.runtime.register_package(
@@ -334,6 +334,6 @@ async def get_package() -> str:
 		base_provider_download_url=get_plugin_download_url() or "",
 		package_name="runs-on-fleet",
 		package_version=get_version(),
-		base64_parameter="ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy42LjAiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9",
+		base64_parameter="ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy42LjEiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9",
 	)
 	

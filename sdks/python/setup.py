@@ -9,7 +9,7 @@ from setuptools.command.install import install
 from subprocess import check_call
 
 
-VERSION = "3.6.0"
+VERSION = "3.6.1"
 def readme():
     try:
         with open('README.md', encoding='utf-8') as f:

@@ -71,8 +71,8 @@ namespace Pulumi.RunsOnFleet
                 downloadUrl: "",
                 parameterization: new global::Pulumi.RegisterPackageRequest.PackageParameterization(
                     name: "runs-on-fleet",
-                    version: "3.6.1",
-                    value: global::System.Convert.FromBase64String("ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy42LjEiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9")));
+                    version: "3.6.2",
+                    value: global::System.Convert.FromBase64String("ewogICJtb2R1bGUiOiAicnVucy1vbi9ydW5zLW9uL2F3cy8vbW9kdWxlcy9mbGVldCIsCiAgInZlcnNpb24iOiAiMy42LjIiLAogICJwYWNrYWdlTmFtZSI6ICJydW5zLW9uLWZsZWV0Igp9")));
         }
 
         private readonly static string version;
